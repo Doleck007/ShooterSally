@@ -7,13 +7,15 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     private PlayerControls controls;
-
+    private Animator animator;
     public Vector2 moveInput;
     public Vector2 aimInput;
 
     [Header("Movement")]
     public float moveSpeed = 5f;
     public float rotationSpeed = 720f;
+    private bool isRunning = false;
+
 
     [Header("Gravity")]
     public float gravity = -9.81f;
@@ -21,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Aim")]
     [SerializeField] private LayerMask aimLayerMask = ~0;
+    [SerializeField] private Transform aim; 
 
     private CharacterController controller;
     private float verticalVelocity = 0f;
@@ -33,6 +36,8 @@ public class PlayerMovement : MonoBehaviour
         controls.Character.Movement.canceled += ctx => moveInput = Vector2.zero;
         controls.Character.Aim.performed += ctx => aimInput = ctx.ReadValue<Vector2>();
         controls.Character.Aim.canceled += ctx => aimInput = Vector2.zero;
+        controls.Character.Run.performed += ctx => isRunning = true;
+        controls.Character.Run.canceled += ctx => isRunning = false;    
     }
 
     void OnEnable() => controls.Enable();
@@ -41,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        animator = GetComponentInChildren<Animator>();
         // optional: snap to ground at start
         if (controller != null)
         {
@@ -57,6 +63,29 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         // 1) Rotate toward aim point first so forward is up-to-date for movement
+       AimTowardsMouse();
+
+        // 2) Move relative to updated forward/right
+        ApplyMovement();
+        AnimatorControllers();
+    }
+
+    private void AnimatorControllers()
+    {
+        Vector3 movementDirection = new Vector3(moveInput.x, 0f, moveInput.y);
+        if (animator != null)
+        {
+            float xVelocity = Vector3.Dot(movementDirection.normalized, transform.right);
+            float zVelocity = Vector3.Dot(movementDirection.normalized, transform.forward);  
+            float speedPercent = moveInput.magnitude;
+            animator.SetFloat("xVelocity", xVelocity, .1f, Time.deltaTime);
+            animator.SetFloat("zVelocity", zVelocity, .1f, Time.deltaTime);
+            animator.SetBool("isRunning", isRunning);
+        }
+    }   
+
+    private void AimTowardsMouse()
+    {
         if (aimInput != Vector2.zero && Camera.main != null)
         {
             Ray ray = Camera.main.ScreenPointToRay(aimInput);
@@ -71,10 +100,8 @@ public class PlayerMovement : MonoBehaviour
                     transform.rotation = Quaternion.RotateTowards(transform.rotation, target, rotationSpeed * Time.deltaTime);
                 }
             }
+            aim.position = new Vector3(hitInfo.point.x, transform.position.y, hitInfo.point.z);
         }
-
-        // 2) Move relative to updated forward/right
-        ApplyMovement();
     }
 
     private void ApplyMovement()
