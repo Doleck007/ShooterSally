@@ -1,130 +1,181 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
+    private Player playerRef;
     private PlayerControls controls;
+    private CharacterController controller;
     private Animator animator;
-    public Vector2 moveInput;
-    public Vector2 aimInput;
 
+    private Vector2 moveInput;
+    private Vector2 aimInput;
+    private Vector3 currentVelocity;
+    private float verticalVelocity;
+    private bool isRunning;
+    
     [Header("Movement")]
-    public float moveSpeed = 5f;
-    public float rotationSpeed = 720f;
-    private bool isRunning = false;
+    [SerializeField] private float walkSpeed = 5f;
+    [SerializeField] private float runSpeed = 8f;
+    [SerializeField] private float acceleration = 15f;
+    [SerializeField] private float deceleration = 20f;
 
+    [Header("Rotation")]
+    [SerializeField] private float rotationSpeed = 720f;
 
     [Header("Gravity")]
-    public float gravity = -9.81f;
-    public float groundedGravity = -0.5f;
+    [SerializeField] private float gravity = -20f;
+    [SerializeField] private float groundedGravity = -2f;
 
     [Header("Aim")]
     [SerializeField] private LayerMask aimLayerMask = ~0;
-    [SerializeField] private Transform aim; 
+    [SerializeField] private Transform aimTarget;
+    [SerializeField] private float aimTargetHeight = 1.2f;
 
-    private CharacterController controller;
-    private float verticalVelocity = 0f;
+    private Vector3 aimWorldPosition;
 
     private void Awake()
     {
-        controls = new PlayerControls();
-
-        controls.Character.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        controls.Character.Movement.canceled += ctx => moveInput = Vector2.zero;
-        controls.Character.Aim.performed += ctx => aimInput = ctx.ReadValue<Vector2>();
-        controls.Character.Aim.canceled += ctx => aimInput = Vector2.zero;
-        controls.Character.Run.performed += ctx => isRunning = true;
-        controls.Character.Run.canceled += ctx => isRunning = false;    
-    }
-
-    void OnEnable() => controls.Enable();
-    void OnDisable() => controls.Disable();
-
-    void Start()
-    {
-        controller = GetComponent<CharacterController>();
+        // cache references only; defer controls setup to OnEnable
+        // playerRef = GetComponent<Player>();
         animator = GetComponentInChildren<Animator>();
-        // optional: snap to ground at start
-        if (controller != null)
-        {
-            Vector3 rayOrigin = transform.position + Vector3.up * 1f;
-            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 10f))
-            {
-                float bottomLocalOffset = controller.center.y - (controller.height * 0.5f);
-                float desiredY = hit.point.y - bottomLocalOffset;
-                transform.position = new Vector3(transform.position.x, desiredY, transform.position.z);
-            }
-        }
+        // controller is assigned in Start to match original ordering
+    }
+    private void Start()
+    {
+        playerRef = GetComponent<Player>();
+        controls = playerRef.controls;
+
+        controller = GetComponent<CharacterController>();
+        SnapToGround();
+        AssignInputEvents();
     }
 
-    void Update()
+    private void AssignInputEvents()
     {
-        // 1) Rotate toward aim point first so forward is up-to-date for movement
-       AimTowardsMouse();
+        controls.Character.Movement.performed += OnMovePerformed;
+        controls.Character.Movement.canceled += OnMoveCanceled;
+        controls.Character.Aim.performed += OnAimPerformed;
+        controls.Character.Aim.canceled += OnAimCanceled;
+        controls.Character.Run.performed += OnRunPerformed;
+        controls.Character.Run.canceled += OnRunCanceled;
 
-        // 2) Move relative to updated forward/right
+    }
+
+    private void OnMovePerformed(InputAction.CallbackContext ctx) => moveInput = ctx.ReadValue<Vector2>();
+    private void OnMoveCanceled(InputAction.CallbackContext ctx) => moveInput = Vector2.zero;
+    private void OnAimPerformed(InputAction.CallbackContext ctx) => aimInput = ctx.ReadValue<Vector2>();
+    private void OnAimCanceled(InputAction.CallbackContext ctx) => aimInput = Vector2.zero;
+    private void OnRunPerformed(InputAction.CallbackContext ctx) => isRunning = true;
+    private void OnRunCanceled(InputAction.CallbackContext ctx) => isRunning = false;
+
+
+    private void Update()
+    {
+        UpdateAimPosition();
+        RotateTowardsAim();
         ApplyMovement();
-        AnimatorControllers();
+        UpdateAnimator();
     }
 
-    private void AnimatorControllers()
+    private void SnapToGround()
     {
-        Vector3 movementDirection = new Vector3(moveInput.x, 0f, moveInput.y);
-        if (animator != null)
-        {
-            float xVelocity = Vector3.Dot(movementDirection.normalized, transform.right);
-            float zVelocity = Vector3.Dot(movementDirection.normalized, transform.forward);  
-            float speedPercent = moveInput.magnitude;
-            animator.SetFloat("xVelocity", xVelocity, .1f, Time.deltaTime);
-            animator.SetFloat("zVelocity", zVelocity, .1f, Time.deltaTime);
-            animator.SetBool("isRunning", isRunning);
-        }
-    }   
+        if (controller == null) return;
 
-    private void AimTowardsMouse()
-    {
-        if (aimInput != Vector2.zero && Camera.main != null)
+        Vector3 rayOrigin = transform.position + Vector3.up;
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 10f))
         {
-            Ray ray = Camera.main.ScreenPointToRay(aimInput);
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, aimLayerMask))
+            float bottomOffset = controller.center.y - (controller.height * 0.5f);
+            transform.position = new Vector3(transform.position.x, hit.point.y - bottomOffset, transform.position.z);
+        }
+    }
+
+    private void UpdateAimPosition()
+    {
+        if (Camera.main == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(aimInput);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, aimLayerMask))
+        {
+            aimWorldPosition = hit.point;
+            aimWorldPosition.y = transform.position.y + aimTargetHeight;
+
+            if (aimTarget != null)
             {
-                Vector3 lookPoint = hitInfo.point;
-                lookPoint.y = transform.position.y;
-                Vector3 lookDir = (lookPoint - transform.position).normalized;
-                if (lookDir.sqrMagnitude > 0.0001f)
-                {
-                    Quaternion target = Quaternion.LookRotation(lookDir);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, target, rotationSpeed * Time.deltaTime);
-                }
+                aimTarget.position = aimWorldPosition;
             }
-            aim.position = new Vector3(hitInfo.point.x, transform.position.y, hitInfo.point.z);
+        }
+    }
+
+    private void RotateTowardsAim()
+    {
+        Vector3 aimDirection = aimWorldPosition - transform.position;
+        aimDirection.y = 0f;
+
+        if (aimDirection.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(aimDirection.normalized);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+            );
         }
     }
 
     private void ApplyMovement()
     {
-        // input vector and magnitude
-        Vector2 input = moveInput;
-        float inputMag = Mathf.Clamp01(input.magnitude);
-        Vector3 inputDir = inputMag > 0f ? new Vector3(input.x, 0f, input.y).normalized : Vector3.zero;
+        if (controller == null) return;
 
-        // horizontal movement relative to player orientation
-        Vector3 horizontal = (transform.forward * inputDir.z + transform.right * inputDir.x) * moveSpeed * inputMag;
+        float inputMagnitude = Mathf.Clamp01(moveInput.magnitude);
+        Vector3 inputDirection = (transform.forward * moveInput.y + transform.right * moveInput.x).normalized;
 
-        // gravity
+        float targetSpeed = isRunning ? runSpeed : walkSpeed;
+        Vector3 targetVelocity = inputDirection * targetSpeed * inputMagnitude;
+
+        float smoothRate = inputMagnitude > 0.1f ? acceleration : deceleration;
+        currentVelocity = Vector3.MoveTowards(currentVelocity, targetVelocity, smoothRate * Time.deltaTime);
+
+        // Apply gravity
         if (controller.isGrounded)
         {
-            if (verticalVelocity < 0f) verticalVelocity = groundedGravity;
+            verticalVelocity = groundedGravity;
         }
         else
         {
             verticalVelocity += gravity * Time.deltaTime;
         }
 
-        Vector3 finalMove = new Vector3(horizontal.x, verticalVelocity, horizontal.z);
-        controller.Move(finalMove * Time.deltaTime);
+        Vector3 finalMovement = new Vector3(currentVelocity.x, verticalVelocity, currentVelocity.z);
+        controller.Move(finalMovement * Time.deltaTime);
+    }
+
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        Vector3 localVelocity = transform.InverseTransformDirection(currentVelocity);
+        float speed = currentVelocity.magnitude / Mathf.Max(0.0001f, walkSpeed);
+
+        float xVelocity = localVelocity.x / walkSpeed;
+        float zVelocity = localVelocity.z / walkSpeed;
+
+        animator.SetFloat("xVelocity", xVelocity, 0.1f, Time.deltaTime);
+        animator.SetFloat("zVelocity", zVelocity, 0.1f, Time.deltaTime);
+        animator.SetBool("isRunning", isRunning && speed > 0.1f);
+    }
+
+    // Public method for touch input integration
+    public void SetMoveInput(Vector2 input)
+    {
+        moveInput = input;
+    }
+
+    // Public method for touch aim integration
+    public void SetAimWorldPosition(Vector3 worldPos)
+    {
+        aimWorldPosition = worldPos;
+        aimWorldPosition.y = transform.position.y + aimTargetHeight;
     }
 }
