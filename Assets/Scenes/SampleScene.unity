@@ -1973,6 +1973,7 @@ GameObject:
   - component: {fileID: 1349005230}
   - component: {fileID: 1349005229}
   - component: {fileID: 1349005232}
+  - component: {fileID: 1349005233}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2160,6 +2161,30 @@ MonoBehaviour:
   - {fileID: 2003599736611668458}
   - {fileID: 234480625070953400}
   - {fileID: 0}
+--- !u!114 &1349005233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349005223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59ec3c71688bf3641ad295288ad6e86d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  gunTransforms:
+  - {fileID: 961172998}
+  - {fileID: 1528454596}
+  - {fileID: 1879498343}
+  - {fileID: 942583732}
+  - {fileID: 1449560728}
+  pistol: {fileID: 961172998}
+  revolver: {fileID: 1528454596}
+  autoRifle: {fileID: 1879498343}
+  shotgun: {fileID: 942583732}
+  sniperRifle: {fileID: 1449560728}
+  leftHandIK: {fileID: 121354866}
 --- !u!1 &1449560727
 GameObject:
   m_ObjectHideFlags: 0
@@ -3075,7 +3100,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1951675817}
-  - component: {fileID: 1951675818}
   m_Layer: 0
   m_Name: Weapon_Holder
   m_TagString: Untagged
@@ -3104,30 +3128,6 @@ Transform:
   - {fileID: 1449560728}
   m_Father: {fileID: 1852576807176916792}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1951675818
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1951675816}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59ec3c71688bf3641ad295288ad6e86d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  gunTransforms:
-  - {fileID: 961172998}
-  - {fileID: 1528454596}
-  - {fileID: 1879498343}
-  - {fileID: 942583732}
-  - {fileID: 1449560728}
-  pistol: {fileID: 961172998}
-  revolver: {fileID: 1528454596}
-  autoRifle: {fileID: 1879498343}
-  shotgun: {fileID: 942583732}
-  sniperRifle: {fileID: 1449560728}
-  leftHandIK: {fileID: 121354866}
 --- !u!1 &2019845284
 GameObject:
   m_ObjectHideFlags: 0
@@ -3517,6 +3517,7 @@ GameObject:
   - component: {fileID: 919132148610272674}
   - component: {fileID: 919132148610272675}
   - component: {fileID: 919132148610272676}
+  - component: {fileID: 919132148610272677}
   m_Layer: 0
   m_Name: Strongman_Villian
   m_TagString: Untagged
@@ -3620,6 +3621,18 @@ MonoBehaviour:
   - {fileID: 2925517129748906219}
   - {fileID: 7358631407778655947}
   - {fileID: 889744324184544366}
+--- !u!114 &919132148610272677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148610272673}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82668f5fec222054faa172d7258772a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
 --- !u!4 &1031632034747460934
 Transform:
   m_ObjectHideFlags: 0

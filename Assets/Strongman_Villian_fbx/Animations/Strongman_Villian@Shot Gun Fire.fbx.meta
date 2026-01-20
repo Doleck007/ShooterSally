@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1f558bc1160971f429298a4aca85e57a
+guid: 3c993badc8859fd4a9aa94eb7f617611
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -31,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Grab Rifle From Behind Shoulder
+      name: Shot Gun
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 16
-      lastFrame: 75
+      firstFrame: 4.2
+      lastFrame: 32
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

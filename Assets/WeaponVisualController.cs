@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
+//using UnityEngine.InputSystem;
 
 public class WeaponVisualController : MonoBehaviour
 {
@@ -9,12 +11,17 @@ public class WeaponVisualController : MonoBehaviour
     [SerializeField] private Transform autoRifle;
     [SerializeField] private Transform shotgun;
     [SerializeField] private Transform sniperRifle;
+    private Animator animator;
 
     private int currentWeaponIndex;
     private Transform currentLeftHandTarget;
 
     [Header("Left hand IK")]
     [SerializeField] private Transform leftHandIK;
+    private Rig rig;
+    private int weaponShouldChange = 0;
+
+
 
     private Player playerRef;
     private PlayerControls controls;
@@ -23,46 +30,35 @@ public class WeaponVisualController : MonoBehaviour
     private void Awake()
     {
         playerRef = GetComponentInParent<Player>();
+        animator = GetComponentInChildren<Animator>();
+
+
     }
 
-    private void OnEnable()
-    {
-        if (playerRef != null && playerRef.controls != null)
-        {
-            controls = playerRef.controls;
-            ownsControls = false;
-        }
-        else
-        {
-            controls = new PlayerControls();
-            ownsControls = true;
-        }
-
-        if (ownsControls)
-            controls.Enable();
-
-        controls.Character.GunSelect.performed += OnGunSelectPerformed;
-    }
-
-    private void OnDisable()
-    {
-        if (controls != null)
-        {
-            controls.Character.GunSelect.performed -= OnGunSelectPerformed;
-
-            if (ownsControls)
-                controls.Disable();
-        }
-    }
 
     private void Start()
     {
+        playerRef = GetComponent<Player>();
+        controls = playerRef.controls;
+        rig = GetComponentInChildren<Rig>();
+        controls.Character.GunSelect.performed += OnGunSelectPerformed;
+       // controls.Character.GunSelect.performed -= OnGunSelectPerformed;
+
+        if (rig == null)
+        {
+            Debug.LogWarning("WeaponVisualController: No Rig component found. Make sure RigBuilder is on a parent.");
+        }
         SwitchToWeapon(0);
     }
 
     private void OnGunSelectPerformed(InputAction.CallbackContext ctx)
     {
+        Debug.LogWarning("OnGunSelectPerformed: weapon change call back");
         CycleToNextWeapon();
+    }
+    private void Update()
+    {
+
     }
 
     private void CycleToNextWeapon()
@@ -70,7 +66,10 @@ public class WeaponVisualController : MonoBehaviour
         if (gunTransforms == null || gunTransforms.Length == 0) return;
 
         currentWeaponIndex = (currentWeaponIndex + 1) % gunTransforms.Length;
-        SwitchToWeapon(currentWeaponIndex);
+        rig.weight = 0;
+        animator.SetTrigger("ChangeWeapon");
+        // animator.GetBool
+        //SwitchToWeapon(currentWeaponIndex);
     }
 
     private void SwitchToWeapon(int index)
@@ -82,13 +81,11 @@ public class WeaponVisualController : MonoBehaviour
             gunTransforms[index].gameObject.SetActive(true);
             UpdateLeftHandTarget(gunTransforms[index]);
         }
+        SwitchAnimationLayer(index);
     }
 
     private void UpdateLeftHandTarget(Transform weapon)
     {
-        //currentLeftHandTarget = weapon.Find("LeftHand_TargetTransform");
-        //currentLeftHandTarget = weapon.GetComponentInChildren<"LeftHand_TargetTransform">().transform;
-        //weapon.GetComponentInChildren<"LeftHand_TargetTransform">();
         currentLeftHandTarget = weapon.GetComponentInChildren<LeftHandTargetTransform>().transform;
         leftHandIK.localPosition = currentLeftHandTarget.localPosition;
         leftHandIK.localRotation = currentLeftHandTarget.localRotation;
@@ -104,4 +101,24 @@ public class WeaponVisualController : MonoBehaviour
             }
         }
     }
+    private void SwitchAnimationLayer(int layerIndexGunIndex)
+    {
+        for (int i = 1; i < animator.layerCount; i++)
+        {
+            animator.SetLayerWeight(i, 0);
+        }
+        if (layerIndexGunIndex == 0 || layerIndexGunIndex == 1 || layerIndexGunIndex == 2) animator.SetLayerWeight(1, 1); // default layer
+        if (layerIndexGunIndex == 3) animator.SetLayerWeight(2, 1); // shotgun layer
+        if (layerIndexGunIndex  == 4) animator.SetLayerWeight(3, 1); // sniper layer
+
+    }
+
+    public void OnWeaponChangeAnimationEvent()
+    {
+        Debug.LogWarning("OnWeaponChangeAnimationEvent: weapon change animation completed indes is: " + currentWeaponIndex);
+        rig.weight = 1;
+        SwitchToWeapon(currentWeaponIndex);
+        
+    }
+
 }

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: bf892ef3b8e4ab14e9d3248a8375205e
+guid: 06792b81548737b439f616f6bd95fa92
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -34,7 +34,7 @@ ModelImporter:
       name: Sniper Rifle
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 0
+      firstFrame: 27.5
       lastFrame: 30
       wrapMode: 0
       orientationOffsetY: 0

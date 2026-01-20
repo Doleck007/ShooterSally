@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 006464f317b6bca428884f0cc3302250
+guid: bf892ef3b8e4ab14e9d3248a8375205e
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -31,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Shot Gun
+      name: Sniper Rifle
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 0
-      lastFrame: 32
+      firstFrame: 3.8
+      lastFrame: 30
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
