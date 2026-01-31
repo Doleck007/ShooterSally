@@ -1,13 +1,16 @@
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class Player : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public PlayerControls controls;
+    public PlayerAim playerAim { get; private set; }
 
     private void Awake()
     {
         controls = new PlayerControls();
+        playerAim = GetComponent<PlayerAim>(); 
     }
 
     private void OnEnable() => controls.Enable();

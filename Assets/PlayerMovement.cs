@@ -28,10 +28,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float gravity = -20f;
     [SerializeField] private float groundedGravity = -2f;
 
-    [Header("Aim")]
-    [SerializeField] private LayerMask aimLayerMask = ~0;
-    [SerializeField] private Transform aimTarget;
-    [SerializeField] private float aimTargetHeight = 1.2f;
+
 
     private Vector3 aimWorldPosition;
 
@@ -56,8 +53,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controls.Character.Movement.performed += OnMovePerformed;
         controls.Character.Movement.canceled += OnMoveCanceled;
-        controls.Character.Aim.performed += OnAimPerformed;
-        controls.Character.Aim.canceled += OnAimCanceled;
+       
         controls.Character.Run.performed += OnRunPerformed;
         controls.Character.Run.canceled += OnRunCanceled;
 
@@ -65,15 +61,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnMovePerformed(InputAction.CallbackContext ctx) => moveInput = ctx.ReadValue<Vector2>();
     private void OnMoveCanceled(InputAction.CallbackContext ctx) => moveInput = Vector2.zero;
-    private void OnAimPerformed(InputAction.CallbackContext ctx) => aimInput = ctx.ReadValue<Vector2>();
-    private void OnAimCanceled(InputAction.CallbackContext ctx) => aimInput = Vector2.zero;
     private void OnRunPerformed(InputAction.CallbackContext ctx) => isRunning = true;
     private void OnRunCanceled(InputAction.CallbackContext ctx) => isRunning = false;
 
 
     private void Update()
     {
-        UpdateAimPosition();
+        //UpdateAimPosition();
         RotateTowardsAim();
         ApplyMovement();
         UpdateAnimator();
@@ -93,8 +87,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateAimPosition()
     {
-        if (Camera.main == null) return;
-
+        /*
+       
         Ray ray = Camera.main.ScreenPointToRay(aimInput);
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, aimLayerMask))
         {
@@ -106,16 +100,18 @@ public class PlayerMovement : MonoBehaviour
                 aimTarget.position = aimWorldPosition;
             }
         }
+        */
     }
 
     private void RotateTowardsAim()
     {
-        Vector3 aimDirection = aimWorldPosition - transform.position;
-        aimDirection.y = 0f;
+        Vector3 lookingDirection = playerRef.playerAim.GetMousePosition() - transform.position;
+        //Vector3 aimDirection = aimWorldPosition - transform.position;
+        lookingDirection.y = 0f;
 
-        if (aimDirection.sqrMagnitude > 0.001f)
+        if (lookingDirection.sqrMagnitude > 0.001f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(aimDirection.normalized);
+            Quaternion targetRotation = Quaternion.LookRotation(lookingDirection.normalized);
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
                 targetRotation,
@@ -176,6 +172,6 @@ public class PlayerMovement : MonoBehaviour
     public void SetAimWorldPosition(Vector3 worldPos)
     {
         aimWorldPosition = worldPos;
-        aimWorldPosition.y = transform.position.y + aimTargetHeight;
+        //aimWorldPosition.y = transform.position.y + aimTargetHeight;
     }
 }

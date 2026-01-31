@@ -136,6 +136,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Reload"",
+                    ""type"": ""Button"",
+                    ""id"": ""bfc0b604-562c-4269-a2b1-71838ea863ed"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -248,6 +257,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""GunSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""eeea0e0a-dc2f-4522-908a-c488ad1d34fa"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Reload"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -261,6 +281,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Character_Aim = m_Character.FindAction("Aim", throwIfNotFound: true);
         m_Character_Run = m_Character.FindAction("Run", throwIfNotFound: true);
         m_Character_GunSelect = m_Character.FindAction("GunSelect", throwIfNotFound: true);
+        m_Character_Reload = m_Character.FindAction("Reload", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -346,6 +367,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Character_Aim;
     private readonly InputAction m_Character_Run;
     private readonly InputAction m_Character_GunSelect;
+    private readonly InputAction m_Character_Reload;
     /// <summary>
     /// Provides access to input actions defined in input action map "Character".
     /// </summary>
@@ -377,6 +399,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Character/GunSelect".
         /// </summary>
         public InputAction @GunSelect => m_Wrapper.m_Character_GunSelect;
+        /// <summary>
+        /// Provides access to the underlying input action "Character/Reload".
+        /// </summary>
+        public InputAction @Reload => m_Wrapper.m_Character_Reload;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -418,6 +444,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @GunSelect.started += instance.OnGunSelect;
             @GunSelect.performed += instance.OnGunSelect;
             @GunSelect.canceled += instance.OnGunSelect;
+            @Reload.started += instance.OnReload;
+            @Reload.performed += instance.OnReload;
+            @Reload.canceled += instance.OnReload;
         }
 
         /// <summary>
@@ -444,6 +473,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @GunSelect.started -= instance.OnGunSelect;
             @GunSelect.performed -= instance.OnGunSelect;
             @GunSelect.canceled -= instance.OnGunSelect;
+            @Reload.started -= instance.OnReload;
+            @Reload.performed -= instance.OnReload;
+            @Reload.canceled -= instance.OnReload;
         }
 
         /// <summary>
@@ -519,5 +551,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnGunSelect(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Reload" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnReload(InputAction.CallbackContext context);
     }
 }

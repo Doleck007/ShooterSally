@@ -17,5 +17,13 @@ public class PlayerAnimationEvents : MonoBehaviour
             weaponVisualController.OnWeaponChangeAnimationEvent();
         }
     }
+    public void OnReloadAnimationEvent()
+    {
+        Debug.Log("OnReloadAnimationEvent: reload animation event called");
+        if (weaponVisualController != null)
+        {
+            weaponVisualController.ReturnRigWeightToOne();
+        }
+    }
   
 }

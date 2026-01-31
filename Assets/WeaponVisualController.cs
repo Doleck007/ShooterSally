@@ -18,6 +18,9 @@ public class WeaponVisualController : MonoBehaviour
 
     [Header("Left hand IK")]
     [SerializeField] private Transform leftHandIK;
+    [Header("Rigging")]
+    [SerializeField] private float rigWeightSpeed = 2f;
+    private bool rigShouldBeIncreased;
     private Rig rig;
     private int weaponShouldChange = 0;
 
@@ -43,6 +46,7 @@ public class WeaponVisualController : MonoBehaviour
         rig = GetComponentInChildren<Rig>();
         controls.Character.GunSelect.performed += OnGunSelectPerformed;
        // controls.Character.GunSelect.performed -= OnGunSelectPerformed;
+       controls.Character.Reload.performed += OnReloadPerformed;
 
         if (rig == null)
         {
@@ -58,9 +62,30 @@ public class WeaponVisualController : MonoBehaviour
     }
     private void Update()
     {
+        if(rigShouldBeIncreased)
+        {
+            rig.weight += rigWeightSpeed * Time.deltaTime;
+            if(rig.weight >= 1)
+            {
+                rig.weight = 1;
+                rigShouldBeIncreased = false;
+            }
+        }
+    }
+    private void OnReloadPerformed(InputAction.CallbackContext ctx)
+    {
 
+        rig.weight = 0;
+        animator.SetTrigger("Reload");
+        
     }
 
+    public void ReturnRigWeightToOne()
+    { 
+        rigShouldBeIncreased = true; 
+        Debug.Log("ReturnRigWeightToOne: reload animation event called, rig weight returning to one");
+    }
+    
     private void CycleToNextWeapon()
     {
         if (gunTransforms == null || gunTransforms.Length == 0) return;
@@ -116,8 +141,8 @@ public class WeaponVisualController : MonoBehaviour
     public void OnWeaponChangeAnimationEvent()
     {
         Debug.LogWarning("OnWeaponChangeAnimationEvent: weapon change animation completed indes is: " + currentWeaponIndex);
-        rig.weight = 1;
         SwitchToWeapon(currentWeaponIndex);
+        rigShouldBeIncreased = true;
         
     }
 
