@@ -3,7 +3,7 @@ using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 //using UnityEngine.InputSystem;
 
-public class WeaponVisualController : MonoBehaviour
+public class PlayerWeaponVisualController : MonoBehaviour
 {
     [SerializeField] private Transform[] gunTransforms;
     [SerializeField] private Transform pistol;
@@ -28,7 +28,6 @@ public class WeaponVisualController : MonoBehaviour
 
     private Player playerRef;
     private PlayerControls controls;
-    private bool ownsControls = false;
 
     private void Awake()
     {
@@ -45,13 +44,9 @@ public class WeaponVisualController : MonoBehaviour
         controls = playerRef.controls;
         rig = GetComponentInChildren<Rig>();
         controls.Character.GunSelect.performed += OnGunSelectPerformed;
-       // controls.Character.GunSelect.performed -= OnGunSelectPerformed;
-       controls.Character.Reload.performed += OnReloadPerformed;
+        // controls.Character.GunSelect.performed -= OnGunSelectPerformed;
+        controls.Character.Reload.performed += OnReloadPerformed;
 
-        if (rig == null)
-        {
-            Debug.LogWarning("WeaponVisualController: No Rig component found. Make sure RigBuilder is on a parent.");
-        }
         SwitchToWeapon(0);
     }
 
@@ -62,10 +57,10 @@ public class WeaponVisualController : MonoBehaviour
     }
     private void Update()
     {
-        if(rigShouldBeIncreased)
+        if (rigShouldBeIncreased)
         {
             rig.weight += rigWeightSpeed * Time.deltaTime;
-            if(rig.weight >= 1)
+            if (rig.weight >= 1)
             {
                 rig.weight = 1;
                 rigShouldBeIncreased = false;
@@ -77,15 +72,15 @@ public class WeaponVisualController : MonoBehaviour
 
         rig.weight = 0;
         animator.SetTrigger("Reload");
-        
+
     }
 
     public void ReturnRigWeightToOne()
-    { 
-        rigShouldBeIncreased = true; 
+    {
+        rigShouldBeIncreased = true;
         Debug.Log("ReturnRigWeightToOne: reload animation event called, rig weight returning to one");
     }
-    
+
     private void CycleToNextWeapon()
     {
         if (gunTransforms == null || gunTransforms.Length == 0) return;
@@ -134,7 +129,7 @@ public class WeaponVisualController : MonoBehaviour
         }
         if (layerIndexGunIndex == 0 || layerIndexGunIndex == 1 || layerIndexGunIndex == 2) animator.SetLayerWeight(1, 1); // default layer
         if (layerIndexGunIndex == 3) animator.SetLayerWeight(2, 1); // shotgun layer
-        if (layerIndexGunIndex  == 4) animator.SetLayerWeight(3, 1); // sniper layer
+        if (layerIndexGunIndex == 4) animator.SetLayerWeight(3, 1); // sniper layer
 
     }
 
@@ -143,7 +138,7 @@ public class WeaponVisualController : MonoBehaviour
         Debug.LogWarning("OnWeaponChangeAnimationEvent: weapon change animation completed indes is: " + currentWeaponIndex);
         SwitchToWeapon(currentWeaponIndex);
         rigShouldBeIncreased = true;
-        
+
     }
 
 }

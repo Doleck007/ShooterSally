@@ -9,8 +9,7 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Animator animator;
 
-    private Vector2 moveInput;
-    private Vector2 aimInput;
+    public Vector2 moveInput { get; private set; }
     private Vector3 currentVelocity;
     private float verticalVelocity;
     private bool isRunning;
@@ -22,7 +21,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float deceleration = 20f;
 
     [Header("Rotation")]
-    [SerializeField] private float rotationSpeed = 720f;
+    [SerializeField] private float rotationSpeed = 10f;
 
     [Header("Gravity")]
     [SerializeField] private float gravity = -20f;
@@ -85,38 +84,22 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void UpdateAimPosition()
-    {
-        /*
-       
-        Ray ray = Camera.main.ScreenPointToRay(aimInput);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, aimLayerMask))
-        {
-            aimWorldPosition = hit.point;
-            aimWorldPosition.y = transform.position.y + aimTargetHeight;
-
-            if (aimTarget != null)
-            {
-                aimTarget.position = aimWorldPosition;
-            }
-        }
-        */
-    }
-
     private void RotateTowardsAim()
     {
-        Vector3 lookingDirection = playerRef.playerAim.GetMousePosition() - transform.position;
+        Vector3 lookingDirection = playerRef.playerAim.GetMousePosition().point - transform.position;
         //Vector3 aimDirection = aimWorldPosition - transform.position;
         lookingDirection.y = 0f;
 
         if (lookingDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(lookingDirection.normalized);
-            transform.rotation = Quaternion.RotateTowards(
+ 
+            transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 targetRotation,
                 rotationSpeed * Time.deltaTime
             );
+
         }
     }
 

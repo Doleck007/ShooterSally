@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,10 +10,13 @@ public class PlayerShooting : MonoBehaviour
     private Player playerRef;
 
 
+
     [Header("Shooting")]
+    [SerializeField] private GameObject bulletprefab;
+    [SerializeField] private float bulletSpeed = 20f;
     [SerializeField] private Transform firePoint;
     [SerializeField] private float fireRate = 0.2f;
-    [SerializeField] private float range = 50f;
+    [SerializeField] private float range = 25f;
     [SerializeField] private int damage = 10;
 
     [Header("Effects")]
@@ -23,6 +27,10 @@ public class PlayerShooting : MonoBehaviour
     [Header("Layers")]
     [SerializeField] private LayerMask hitLayers = ~0;
 
+    [SerializeField] private Transform weaponHolder;
+    [SerializeField] private Transform aim;
+
+
     private float nextFireTime;
     private bool isFiring;
 
@@ -30,7 +38,7 @@ public class PlayerShooting : MonoBehaviour
     {
         // cache references only
         playerRef = GetComponent<Player>();
-      
+
         animator = GetComponentInChildren<Animator>();
 
         if (firePoint == null)
@@ -67,12 +75,14 @@ public class PlayerShooting : MonoBehaviour
 
     private void Fire()
     {
-        // Trigger animation
-        if (animator != null)
-        {
-            animator.SetTrigger("Fire");
-        }
 
+
+        GameObject bullet = Instantiate(bulletprefab, firePoint.position, Quaternion.LookRotation(firePoint.forward));
+
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        rb.linearVelocity = BulletDirection() * bulletSpeed;
+
+        Destroy(bullet, 5f);
         // Muzzle flash
         if (muzzleFlashPrefab != null)
         {
@@ -117,6 +127,26 @@ public class PlayerShooting : MonoBehaviour
         }
     }
 
+    private Vector3 BulletDirection()
+    {
+        Vector3 direction = (aim.position - firePoint.position).normalized;
+       if(playerRef.playerAim.CanAimPrecisly())
+        {
+            direction = (aim.position - firePoint.position).normalized;
+        }
+        else
+        {
+            direction = transform.forward; // Default to forward if not aiming precisely
+        }
+       //direction.y = 0; // Keep the bullet on the horizontal plane
+
+        weaponHolder.LookAt(aim);
+        firePoint.LookAt(aim);
+
+        return direction;
+    }
+
+
     private void SpawnTrail(Vector3 start, Vector3 end)
     {
         TrailRenderer trail = Instantiate(bulletTrailPrefab, start, Quaternion.identity);
@@ -148,7 +178,15 @@ public class PlayerShooting : MonoBehaviour
             nextFireTime = Time.time + fireRate;
         }
     }
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawLine(weaponHolder.position, weaponHolder.position + weaponHolder.forward * range);
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(firePoint.position, firePoint.position + BulletDirection() * range);
+
+    }
 }
+
 
 // Interface for damageable objects
 public interface IDamageable
